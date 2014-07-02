@@ -141,6 +141,89 @@ class SimpleDict
     }
 
     /**
+     * replace words to $to
+     * if $to is callable, replace to call_user_func($to, $word, $value)
+     * @param string $str
+     * @param mixed $to
+     * @return string
+     */
+    public function replace($str, $to)
+    {
+        $ret   = '';
+        $itr   = new CharIterator($str);
+        $stops = self::CHAR_STOP;
+
+        $buff = '';
+        $size   = 0;
+        $offset = 0;
+        $buffValue = array();
+        foreach ($itr as $char) {
+            if (strpos($stops, $char) !== false) {
+                if (empty($buffValue)) {
+                    $ret .= $buff.$char;
+                } else {
+                    $ret .= $this->replaceTo($buffValue[0], $buffValue[1], $to)
+                        .substr($buff, strlen($buffValue[0])).$char;
+                }
+                $buff = '';
+                $buffValue = array();
+
+                continue;
+            }
+
+            if ($buff !== '') {
+                list($fCount, $fOffset, $fValue) =
+                    $this->findWord($char, $size, $offset);
+                if ($fValue === null) {
+                    if (empty($buffValue)) {
+                        $ret .= $buff;
+                    } else {
+                        $ret .= $this->replaceTo($buffValue[0], $buffValue[1], $to)
+                            .substr($buff, strlen($buffValue[0]));
+                    }
+                    $buff = '';
+                    $buffValue = array();
+                } else {
+                    if ($fCount > 0) {
+                        $buff  .= $char;
+                        $size   = $fCount;
+                        $offset = $fOffset;
+                        if (!empty($fValue)) {
+                            $buffValue = array($buff, $fValue);
+                        }
+                    } else {
+                        $ret .= $this->replaceTo($buff.$char, $fValue, $to);
+                        $buff = '';
+                        $buffValue = array();
+                    }
+                    continue;
+                }
+            }
+
+            if (isset($this->start[$char])) {
+                list($fCount, $fOffset, $fValue) = $this->start[$char];
+                if ($fCount > 0) {
+                    $buff   = $char;
+                    $size   = $fCount;
+                    $offset = $fOffset;
+                } else {
+                    $ret .= $this->replaceTo($char, $fValue, $to);
+                }
+            } else {
+                $ret .= $char;
+            }
+        }
+
+        return $ret;
+    }
+
+    public function replaceTo($word, $value, $to) {
+        return is_callable($to)
+            ? call_user_func($to, $word, $value)
+            : $to;
+    }
+
+    /**
      * from $offset, find $char, up to $count record
      * @param string $char
      * @param int $count
