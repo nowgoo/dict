@@ -21,7 +21,7 @@ SimpleDict
 
     SimpleDict::make("text_file_path", "output_dict_path");
 
-**使用**
+**搜索**
 
     $dict = new SimpleDict("dict_path");
     $result = $dict->search("some text here...");
@@ -32,3 +32,11 @@ SimpleDict
       ...
     )*/
 
+**替换**
+
+    // 简单替换
+    $replaced = $dict->replace("some text here...", "**");
+    // 高级替换
+    $replaced = $dict->replace("some text here...", function($word, $value) {
+      return "[$word -> $value]";
+    });
