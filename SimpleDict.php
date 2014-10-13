@@ -203,9 +203,13 @@ class SimpleDict
             if (isset($this->start[$char])) {
                 list($fCount, $fOffset, $fValue) = $this->start[$char];
                 if ($fCount > 0) {
-                    $buff   = $char;
-                    $size   = $fCount;
-                    $offset = $fOffset;
+                    if(!empty($fValue))
+                        $ret .= $this->replaceTo($char, $fValue, $to);
+                    else {
+                        $buff   = $char;
+                        $size   = $fCount;
+                        $offset = $fOffset;
+                    }
                 } else {
                     $ret .= $this->replaceTo($char, $fValue, $to);
                 }
