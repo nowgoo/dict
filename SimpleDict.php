@@ -76,6 +76,7 @@ class SimpleDict
 
     public function __destruct()
     {
+        unset($this->start);
         fclose($this->file);
     }
 
@@ -203,19 +204,24 @@ class SimpleDict
             if (isset($this->start[$char])) {
                 list($fCount, $fOffset, $fValue) = $this->start[$char];
                 if ($fCount > 0) {
+                    $buff   = $char;
+                    $size   = $fCount;
+                    $offset = $fOffset;
                     if(!empty($fValue))
-                        $ret .= $this->replaceTo($char, $fValue, $to);
-                    else {
-                        $buff   = $char;
-                        $size   = $fCount;
-                        $offset = $fOffset;
-                    }
+                        $buffValue = array($buff, $fValue);
                 } else {
                     $ret .= $this->replaceTo($char, $fValue, $to);
                 }
             } else {
                 $ret .= $char;
             }
+        }
+
+        if($buff !== '') {
+            if(empty($buffValue))
+                $ret .= $buff;
+            else
+                $ret .= $this->replaceTo($buffValue[0], $buffValue[1], $to) . substr($buff, strlen($buffValue[0]));
         }
 
         return $ret;
