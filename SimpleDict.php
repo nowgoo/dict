@@ -301,7 +301,7 @@ class SimpleDict
         $data = array();
         $fp   = fopen($input, 'r');
         $vLen = 0;
-        while ($line = fgetcsv($fp, 1024)) {
+        while ($line = fgets($fp, 1024)) {
             list($word, $value) = explode("\t", rtrim($line));
             $itr = new CharIterator($word);
             $pfx = '';
